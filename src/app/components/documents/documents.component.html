@@ -1,0 +1,84 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="breadcrumbs">
+        <a routerLink="/semesters">Semesters</a>
+        <span>›</span>
+        <a [routerLink]="['/semesters', semester?.id]">{{ semester?.name }}</a>
+        <span>›</span>
+        <span>{{ subject?.name }}</span>
+      </div>
+      <h1>{{ subject?.name }}</h1>
+      <p>{{ subject?.code }} · {{ documents.length }} Document{{ documents.length !== 1 ? 's' : '' }}</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="doc-list" *ngIf="documents.length; else empty">
+      <div class="doc-card" *ngFor="let doc of documents">
+        <div class="doc-type-badge"
+             [style.background]="getTypeColor(doc.type) + '18'"
+             [style.color]="getTypeColor(doc.type)">
+          {{ getFileIcon(doc.type) }} {{ doc.type.toUpperCase() }}
+        </div>
+        <div class="doc-info">
+          <h3>{{ doc.name }}</h3>
+          <div class="doc-meta">
+            <span>{{ doc.size }}</span>
+            <span>·</span>
+            <span>{{ doc.uploadedAt }}</span>
+            <span>·</span>
+            <span>By {{ doc.uploadedBy }}</span>
+          </div>
+        </div>
+        <div class="doc-actions">
+          <button class="btn-view" (click)="viewDocument(doc)">👁 View</button>
+          <button class="btn-download" (click)="downloadDocument(doc)">⬇ Download</button>
+          <button class="btn-delete" *ngIf="auth.isAdmin" (click)="deleteDocument(doc.id)">🗑</button>
+        </div>
+      </div>
+    </div>
+    <ng-template #empty>
+      <div class="empty-state">
+        <span>📭</span>
+        <p>No documents uploaded yet for this subject.</p>
+        <a *ngIf="auth.isAdmin" routerLink="/admin" class="btn-link">Go to Admin Panel to upload →</a>
+      </div>
+    </ng-template>
+  </div>
+</div>
+
+<!-- Document Viewer Modal -->
+<div class="modal-overlay" *ngIf="viewingDoc" (click)="closeViewer()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ viewingDoc.name }}</h3>
+      <div class="modal-header-actions">
+        <button class="btn-download-sm" (click)="downloadDocument(viewingDoc)">⬇ Download</button>
+        <button class="modal-close" (click)="closeViewer()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="loading-view" *ngIf="loadingView">
+        <div class="spinner"></div>
+        <p>Loading document...</p>
+      </div>
+      <ng-container *ngIf="!loadingView">
+        <div *ngIf="!viewingUrl && viewingDoc" class="preview-unavailable">
+          <span>❌</span>
+          <p>Document could not be loaded. Please try downloading it instead.</p>
+          <button class="btn-download" (click)="downloadDocument(viewingDoc)">⬇ Download Document</button>
+        </div>
+        <iframe *ngIf="viewingUrl && viewingDoc.type === 'pdf'" [src]="viewingUrl" class="doc-iframe" 
+        allow="fullscreen" 
+        sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
+        loading="lazy"></iframe>
+        <div *ngIf="viewingDoc.type !== 'pdf'" class="preview-unavailable">
+          <span>📄</span>
+          <p>Preview not available for {{ viewingDoc.type.toUpperCase() }} files.</p>
+          <button class="btn-download" (click)="downloadDocument(viewingDoc)">⬇ Download to Open</button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

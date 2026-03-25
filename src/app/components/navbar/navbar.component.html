@@ -1,0 +1,33 @@
+<nav class="navbar">
+  <div class="nav-container">
+    <a routerLink="/" class="nav-brand">
+      <span class="brand-icon">📚</span>
+      <div class="brand-text">
+        <span class="brand-title">StudyHub</span>
+        <span class="brand-sub">MCA A25 Batch</span>
+      </div>
+    </a>
+
+    <div class="nav-links" [class.open]="menuOpen">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" (click)="menuOpen=false">Home</a>
+      <a routerLink="/semesters" routerLinkActive="active" (click)="menuOpen=false">Semesters</a>
+      <ng-container *ngIf="auth.isAdmin">
+        <a routerLink="/admin" routerLinkActive="active" (click)="menuOpen=false">Admin Panel</a>
+      </ng-container>
+      <ng-container *ngIf="!auth.isLoggedIn; else loggedIn">
+        <a routerLink="/login" class="btn-login" (click)="menuOpen=false">Admin Login</a>
+      </ng-container>
+      <ng-template #loggedIn>
+        <div class="user-chip">
+          <span class="user-avatar">{{ auth.currentUser?.name?.charAt(0) }}</span>
+          <span>{{ auth.currentUser?.name }}</span>
+        </div>
+        <button class="btn-logout" (click)="logout()">Logout</button>
+      </ng-template>
+    </div>
+
+    <button class="menu-toggle" (click)="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>

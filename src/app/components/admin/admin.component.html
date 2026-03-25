@@ -1,0 +1,267 @@
+<div class="admin-page">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span>🛡️</span>
+      <div>
+        <div class="sb-title">Admin Panel</div>
+        <div class="sb-user">{{ auth.currentUser?.name }}</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <button [class.active]="activeTab==='semesters'" (click)="activeTab='semesters'">
+        <span>🗓️</span> Semesters
+        <span class="badge">{{ semesters.length }}</span>
+      </button>
+      <button [class.active]="activeTab==='subjects'" (click)="activeTab='subjects'">
+        <span>📚</span> Subjects
+        <span class="badge">{{ subjects.length }}</span>
+      </button>
+      <button [class.active]="activeTab==='documents'" (click)="activeTab='documents'">
+        <span>📄</span> Documents
+        <span class="badge">{{ allDocuments.length }}</span>
+      </button>
+    </nav>
+    <a routerLink="/" class="sidebar-back">← Back to Site</a>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+
+    <!-- SEMESTERS TAB -->
+    <div *ngIf="activeTab==='semesters'">
+      <div class="tab-header">
+        <div>
+          <h2>Semesters</h2>
+          <p>Manage academic semesters for MCA A25 Batch</p>
+        </div>
+        <button class="btn-add" (click)="openSemForm()">+ Add Semester</button>
+      </div>
+
+      <div class="table-card" *ngIf="semesters.length; else noSem">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Name</th><th>Subjects</th><th>Actions</th>
+          </tr></thead>
+          <tbody>
+            <tr *ngFor="let sem of semesters">
+              <td><div class="sem-num-badge">{{ sem.number }}</div></td>
+              <td><strong>{{ sem.name }}</strong></td>
+              <td>{{ getSubjectsForSem(sem.id).length }}</td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn-edit" (click)="openSemForm(sem)">Edit</button>
+                  <button class="btn-del" (click)="deleteSemester(sem.id)">Delete</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noSem>
+        <div class="empty-state"><span>📭</span><p>No semesters yet. Click "Add Semester" to get started.</p></div>
+      </ng-template>
+    </div>
+
+    <!-- SUBJECTS TAB -->
+    <div *ngIf="activeTab==='subjects'">
+      <div class="tab-header">
+        <div>
+          <h2>Subjects</h2>
+          <p>Manage subjects across all semesters</p>
+        </div>
+        <button class="btn-add" (click)="openSubForm()">+ Add Subject</button>
+      </div>
+
+      <ng-container *ngIf="semesters.length; else noSemForSub">
+        <div *ngFor="let sem of semesters" class="sem-group">
+          <div class="sem-group-header">
+            <span class="sem-group-title">{{ sem.name }}</span>
+            <span class="sem-group-count">{{ getSubjectsForSem(sem.id).length }} subjects</span>
+          </div>
+          <div class="table-card" *ngIf="getSubjectsForSem(sem.id).length; else noSubInSem">
+            <table>
+              <thead><tr><th>Code</th><th>Name</th><th>Description</th><th>Docs</th><th>Actions</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let sub of getSubjectsForSem(sem.id)">
+                  <td><span class="code-badge">{{ sub.code }}</span></td>
+                  <td><strong>{{ sub.name }}</strong></td>
+                  <td class="desc-cell">{{ sub.description || '—' }}</td>
+                  <td>{{ data.getDocumentsBySubject(sub.id).length }}</td>
+                  <td>
+                    <div class="action-btns">
+                      <button class="btn-edit" (click)="openSubForm(sub)">Edit</button>
+                      <button class="btn-del" (click)="deleteSubject(sub.id)">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ng-template #noSubInSem>
+            <p class="no-sub-text">No subjects yet. <button class="btn-inline" (click)="subForm.semesterId=sem.id; openSubForm()">Add one →</button></p>
+          </ng-template>
+        </div>
+      </ng-container>
+      <ng-template #noSemForSub>
+        <div class="empty-state"><span>📭</span><p>Create a semester first before adding subjects.</p></div>
+      </ng-template>
+    </div>
+
+    <!-- DOCUMENTS TAB -->
+    <div *ngIf="activeTab==='documents'">
+      <div class="tab-header">
+        <div>
+          <h2>Documents</h2>
+          <p>Upload and manage study materials</p>
+        </div>
+        <button class="btn-add" (click)="showDocForm=true; docForm={name:'',subjectId:'',semesterId:'',type:'pdf'}">+ Upload Document</button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <select [(ngModel)]="filterSemId" (change)="onSemChange()" class="filter-select">
+          <option value="">All Semesters</option>
+          <option *ngFor="let s of semesters" [value]="s.id">{{ s.name }}</option>
+        </select>
+        <select [(ngModel)]="filterSubId" class="filter-select">
+          <option value="">All Subjects</option>
+          <option *ngFor="let s of getSubjectsFiltered()" [value]="s.id">{{ s.name }}</option>
+        </select>
+      </div>
+
+      <div class="table-card" *ngIf="getFilteredDocs().length; else noDocs">
+        <table>
+          <thead><tr><th>Name</th><th>Subject</th><th>Semester</th><th>Type</th><th>Size</th><th>Uploaded</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let doc of getFilteredDocs()">
+              <td><strong>{{ doc.name }}</strong></td>
+              <td>{{ getSubjectName(doc.subjectId) }}</td>
+              <td>{{ getSemesterName(doc.semesterId) }}</td>
+              <td><span class="type-tag">{{ doc.type.toUpperCase() }}</span></td>
+              <td>{{ doc.size }}</td>
+              <td>{{ doc.uploadedAt }}</td>
+              <td><button class="btn-del" (click)="deleteDoc(doc.id)">Delete</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ng-template #noDocs>
+        <div class="empty-state"><span>📭</span><p>No documents uploaded yet.</p></div>
+      </ng-template>
+    </div>
+  </main>
+</div>
+
+<!-- Semester Modal -->
+<div class="modal-overlay" *ngIf="showSemForm" (click)="showSemForm=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-title">{{ editSemId ? 'Edit' : 'Add' }} Semester</div>
+    <div class="form-group">
+      <label>Semester Name *</label>
+      <input [(ngModel)]="semForm.name" placeholder="e.g. Semester I" class="form-input" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Semester Number *</label>
+        <input type="number" [(ngModel)]="semForm.number" placeholder="1" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label>Academic Year</label>
+        <input [(ngModel)]="semForm.year" placeholder="2025-26" class="form-input" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="showSemForm=false">Cancel</button>
+      <button class="btn-save" (click)="saveSemester()">{{ editSemId ? 'Update' : 'Create' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Subject Modal -->
+<div class="modal-overlay" *ngIf="showSubForm" (click)="showSubForm=false">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-title">{{ editSubId ? 'Edit' : 'Add' }} Subject</div>
+    <div class="form-group">
+      <label>Subject Name *</label>
+      <input [(ngModel)]="subForm.name" placeholder="e.g. Database Management Systems" class="form-input" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Subject Code *</label>
+        <input [(ngModel)]="subForm.code" placeholder="MCA201" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label>Semester *</label>
+        <select [(ngModel)]="subForm.semesterId" class="form-input">
+          <option value="">Select Semester</option>
+          <option *ngFor="let s of semesters" [value]="s.id">{{ s.name }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description (optional)</label>
+      <textarea [(ngModel)]="subForm.description" placeholder="Brief description..." class="form-input" rows="2"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="showSubForm=false">Cancel</button>
+      <button class="btn-save" (click)="saveSubject()">{{ editSubId ? 'Update' : 'Create' }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Document Upload Modal -->
+<div class="modal-overlay" *ngIf="showDocForm" (click)="showDocForm=false">
+  <div class="modal-box upload-modal" (click)="$event.stopPropagation()">
+    <div class="modal-title">Upload Document</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Semester *</label>
+        <select [(ngModel)]="docForm.semesterId" (change)="onSemChange()" class="form-input">
+          <option value="">Select Semester</option>
+          <option *ngFor="let s of semesters" [value]="s.id">{{ s.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Subject *</label>
+        <select [(ngModel)]="docForm.subjectId" class="form-input">
+          <option value="">Select Subject</option>
+          <option *ngFor="let s of getSubjectsFiltered()" [value]="s.id">{{ s.name }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Document Name *</label>
+      <input [(ngModel)]="docForm.name" placeholder="e.g. Unit 1 - Introduction Notes" class="form-input" />
+    </div>
+
+    <div class="form-group">
+      <label>File *</label>
+      <div class="file-drop">
+        <input type="file" id="fileInput" (change)="onFileSelect($event)" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.png,.jpg" style="display:none" />
+        <label for="fileInput" class="file-drop-label">
+          <span>📁</span>
+          <span *ngIf="!uploadedFile">Click to browse or drag & drop</span>
+          <span *ngIf="uploadedFile" class="file-selected">{{ uploadedFile.name }} ({{ formatSize(uploadedFile.size) }})</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="upload-error" *ngIf="uploadError">{{ uploadError }}</div>
+    <div class="upload-progress" *ngIf="uploading">
+      <div class="progress-bar"><div class="progress-fill" [style.width.%]="uploadProgress"></div></div>
+      <span>{{ uploadProgress }}%</span>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" (click)="cancelUpload()">
+        {{ uploading ? 'Cancel Upload' : 'Cancel' }}
+      </button>
+      <button class="btn-save" (click)="uploadDocument()" [disabled]="uploading || !uploadedFile || !docForm.subjectId || !docForm.name">
+        {{ uploading ? 'Uploading...' : '⬆ Upload' }}
+      </button>
+    </div>
+  </div>
+</div>

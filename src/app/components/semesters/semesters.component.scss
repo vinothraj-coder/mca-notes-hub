@@ -1,0 +1,84 @@
+.page-wrapper { min-height: 100vh; }
+
+.page-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  padding: 3.5rem 1.5rem 3rem;
+  .page-header-inner { max-width: 1200px; margin: 0 auto; }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.25rem; font-weight: 800;
+    color: white; margin-bottom: 0.5rem;
+  }
+  p { color: rgba(255,255,255,0.8); font-size: 1rem; margin: 0; }
+}
+
+.container { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+.sem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.sem-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.75rem 2rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.25s;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(99,102,241,0.12);
+    border-color: var(--primary-light);
+    &::before { opacity: 1; }
+    .sem-arrow { transform: translateX(4px); color: var(--primary); }
+  }
+
+  .sem-number {
+    flex-shrink: 0;
+    width: 52px; height: 52px;
+    background: var(--primary-soft);
+    color: var(--primary);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; font-weight: 800;
+    font-family: 'Playfair Display', serif;
+  }
+
+  .sem-info {
+    flex: 1;
+    h2 { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.2rem; }
+    .sem-sub { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+  }
+
+  .sem-arrow {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 5rem 1rem;
+  span { font-size: 3rem; }
+  p { color: var(--text-muted); margin-top: 1rem; }
+}

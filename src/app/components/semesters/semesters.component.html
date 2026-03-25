@@ -1,0 +1,28 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <h1>Semesters</h1>
+      <p>Select a semester to browse subjects and study materials</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="sem-grid" *ngIf="semesters.length; else empty">
+      <a class="sem-card" *ngFor="let sem of semesters; let i = index"
+         [routerLink]="['/semesters', sem.id]">
+        <div class="sem-number">{{ sem.number }}</div>
+        <div class="sem-info">
+          <h2>{{ sem.name }}</h2>
+          <span class="sem-sub">{{ sem.subjectCount }} Subject{{ sem.subjectCount !== 1 ? 's' : '' }}</span>
+        </div>
+        <div class="sem-arrow">→</div>
+      </a>
+    </div>
+    <ng-template #empty>
+      <div class="empty-state">
+        <span>📭</span>
+        <p>No semesters found. Admin can add semesters from the Admin Panel.</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

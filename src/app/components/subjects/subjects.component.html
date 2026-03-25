@@ -1,0 +1,36 @@
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <a routerLink="/semesters" class="breadcrumb-back">← All Semesters</a>
+      <h1>{{ semester?.name }}</h1>
+      <p>Academic Year {{ semester?.year }} · {{ subjects.length }} Subjects</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="subject-grid" *ngIf="subjects.length; else empty">
+      <a class="subject-card" *ngFor="let sub of subjects"
+         [routerLink]="['/semesters', semester.id, 'subjects', sub.id]">
+        <div class="subject-icon">📘</div>
+        <div class="subject-info">
+          <span class="subject-code">{{ sub.code }}</span>
+          <h3>{{ sub.name }}</h3>
+          <p class="subject-desc" *ngIf="sub.description">{{ sub.description }}</p>
+        </div>
+        <div class="subject-footer">
+          <span class="doc-count">
+            <span class="doc-icon">📄</span>
+            {{ sub.documentCount }} Document{{ sub.documentCount !== 1 ? 's' : '' }}
+          </span>
+          <span class="view-link">View →</span>
+        </div>
+      </a>
+    </div>
+    <ng-template #empty>
+      <div class="empty-state">
+        <span>📂</span>
+        <p>No subjects found for this semester. Admin can add subjects from the Admin Panel.</p>
+      </div>
+    </ng-template>
+  </div>
+</div>
