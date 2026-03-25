@@ -1,7 +1,13 @@
-# Netlify configuration for StudyHub
+# Netlify configuration for StudyHub SPA
 [build]
   command = "npm run build"
-  publish = "dist/browser/browser"
+  publish = "dist/mca-study-hub/browser"
+
+# SPA routing - redirect all routes to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 # Build environment variables
 [build.environment]
